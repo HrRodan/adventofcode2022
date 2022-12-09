@@ -1,6 +1,8 @@
+from functools import reduce
+
 import numpy as np
 
-with open('input_test.txt') as f:
+with open('input.txt') as f:
     forest = np.array([[int(x) for x in line.strip()] for line in f.readlines()]).astype(np.byte)
 
 size = forest.shape[0]
@@ -38,15 +40,26 @@ for k in (1, -1):
 
 print(visible_trees.sum())
 
-forest_padded = np.pad(forest, pad_width=((0,0), forest.shape), mode='constant', constant_values=99)
-count_visible_trees = np.zeros(forest_padded.shape).astype(np.byte)
+all_trees = np.transpose(np.ones(forest.shape).nonzero())
+tree_score = [np.zeros(forest.shape).astype(int) for _ in range(4)]
 
-for k in (-1,1):
-    found_max = np.full(forest_padded.shape, fill_value=-1).astype(np.byte)
-    done_trees = np.full(forest_padded.shape, fill_value=False)
-    for i in range(1, size):
-        forest_padded_rolled = np.roll(forest_padded, k*i, axis=1)
-        found_max = np.maximum(found_max, forest_padded_rolled)
-        count_visible_trees_previous = count_visible_trees.copy()
-        count_visible_trees = np.where(found_max < forest_padded,count_visible_trees + 1, count_visible_trees)
+# part 2
+for tree in all_trees:
+    original_tree_height = forest[tuple(tree)]
+    original_tree_tuple = tuple(tree)
+    for i, k in enumerate(((1, 0), (-1, 0), (0, 1), (0, -1))):
+        this_tree_as_tuple = tuple(tree)
+        this_tree = tree
+        while True:
+            next_tree = this_tree + k
+            next_tree_as_tuple = tuple(next_tree)
+            if not (0 <= next_tree_as_tuple[0] <= size - 1 and 0 <= next_tree_as_tuple[1] <= size - 1):
+                break
+            next_tree_height = forest[next_tree_as_tuple]
+            tree_score[i][original_tree_tuple] += 1
+            if next_tree_height >= original_tree_height:
+                break
+            this_tree = next_tree
 
+r1 = reduce(np.multiply, tree_score)
+print(np.max(r1))
