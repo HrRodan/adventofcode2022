@@ -4,7 +4,7 @@ import numpy as np
 from utilities import *
 
 with open('input.txt') as f:
-    height_map = np.array([[ord(x) for x in line.strip()] for line in f.readlines()]).astype(int)
+    height_map = np.array([[ord(x) for x in line.strip()] for line in f.readlines()]).astype(np.byte)
 
 start = tuple(np.argwhere(height_map == ord('S'))[0])
 end = tuple(np.argwhere(height_map == ord('E'))[0])
@@ -27,13 +27,6 @@ r1 = nx.shortest_path_length(G, start, end)
 print(r1)
 
 # part2
-all_low_elements = [tuple(x) for x in tuple(np.argwhere(height_map == ord('a')))]
-all_path_lengths = []
-for e in all_low_elements:
-    try:
-        all_path_lengths.append(nx.shortest_path_length(G, e, end))
-    except nx.NetworkXNoPath:
-        continue
-
-r2 = min(all_path_lengths)
-print(r2)
+all_low_elements = [tuple(x) for x in np.argwhere(height_map == ord('a'))]
+length, _ = nx.multi_source_dijkstra(G, all_low_elements, end)
+print(length)
