@@ -1,9 +1,10 @@
+from ast import literal_eval
 from functools import cmp_to_key
 from itertools import zip_longest
 from typing import Union, Optional
 
 with open('input.txt') as f:
-    pairs = [[eval(y) for y in x.split('\n')] for x in f.read().strip().split('\n\n')]
+    pairs = [[literal_eval(y) for y in x.split('\n')] for x in f.read().strip().split('\n\n')]
 
 VALUE_TYPE = Optional[Union[int, list]]
 
