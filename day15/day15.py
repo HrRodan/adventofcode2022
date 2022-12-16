@@ -40,6 +40,7 @@ all_occupied = {y for r in get_occupied_y_range(y_line) for y in range(*r)}
 
 print(len(all_occupied) - count_postions_on_y)
 
+#part 2
 
 def find_gap(occupied_y):
     x_max = None
