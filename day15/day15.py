@@ -21,20 +21,12 @@ with open(file_name) as f:
 for v in sensors:
     v.append(distance.cityblock(v[0], v[1]))
 
-
-def overlap_1d(r1, r2):
-    return max(0, min(r1[1], r2[1]) - max(r2[0], r1[0]))
-
-
-max_distance = max(x for _, _, x in sensors)
-all_x = [x for (x, _), _, _ in sensors]
-x_range = (min(all_x) - max_distance - 1, max(all_x) + max_distance + 1)
+# part 1
 
 all_positions = [x for s in sensors for x in s if type(x) == tuple]
 count_postions_on_y = len({((x, y_p) for x, y_p in all_positions if y_p == y_line)})
 
 
-# part 1
 def get_occupied_y_range(y_value):
     occupied_y_ranges = []
     for (x_y, y_s), _, d in sensors:
@@ -48,19 +40,31 @@ all_occupied = {y for r in get_occupied_y_range(y_line) for y in range(*r)}
 
 print(len(all_occupied) - count_postions_on_y)
 
-# part 2
+
+def find_gap(occupied_y):
+    x_max = None
+    for (x1, x2) in sorted(occupied_y):
+        x1 = max(x1, 0)
+        x2 = min(x2, max_p + 1)
+        if not x_max:
+            x_max = x1
+        if x1 > x_max:
+            return True
+        x_max = max(x_max, x2)
+    return False
+
 
 for y_current in range(max_p + 1):
-    x_values = {x for r in get_occupied_y_range(y_current) for x in range(*r) if 0 <= x <= max_p}
-    if y_current % 10 == 0:
+    if y_current % 100000 == 0:
         print(y_current)
-    if len(x_values) != max_p+1:
+    if gap := find_gap(get_occupied_y_range(y_current)):
         y_result = y_current
-        result = x_values
         break
 
-for x1, x2 in pairwise(sorted(x_values)):
-    if x2-x1 != 1:
-        x_result = x1+1
+all_occupied_part2 = {y for r in get_occupied_y_range(y_result) for y in range(*r)}
 
-print(x_result*4000000 + y_result)
+for x1, x2 in pairwise(sorted(all_occupied_part2)):
+    if x2 - x1 != 1:
+        x_result = x1 + 1
+
+print(x_result * 4000000 + y_result)
