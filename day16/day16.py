@@ -3,7 +3,7 @@ import re
 from copy import copy
 from functools import total_ordering
 
-with open('input.txt') as f:
+with open('input_test.txt') as f:
     valves = [(x.group(1), int(x.group(2)), x.group(3).split(', ')) for line in f.readlines() for x in
               [re.match(r'^Valve ([A-Z]{2}).+rate=(\d+).+valves? ([A-Z, ]+)+$', line.strip())]]
 
@@ -44,8 +44,11 @@ class ValveStatus():
         new.valve_status = self.valve_status.copy()
         return new
 
-    # def __setattr__(self, key, value):
-    #     setattr(self.valve_status, key, value)
+    def count(self):
+        return sum(self.valve_status.values())
+
+    def count_closed(self):
+        return sum(not x for x in self.valve_status.values())
 
 
 all_valves_closed = {k: False for k in valves_with_rate}
@@ -78,10 +81,8 @@ while time_states_to_visit:
     for valve_next in next_valves[valve_current]:
         valve_status_current_copy = copy(valve_status_current)
         next_tuple = (valve_next, valve_status_current_copy, time_next)
-        # earlier_visits = min(
-        #     highest_rate.get((valve_next, valve_status_current_copy, i), 0) for i in range(time_next + 1, 1))
         if (next_tuple not in highest_rate or highest_rate[
-            next_tuple] > rate_current):# and rate_current <= earlier_visits:
+            next_tuple] > rate_current):
             highest_rate[next_tuple] = rate_current
             heapq.heappush(time_states_to_visit, ((rate_current, time_next), (valve_next, valve_status_current_copy)))
 
