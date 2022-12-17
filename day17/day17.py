@@ -1,3 +1,4 @@
+from copy import deepcopy
 from itertools import cycle
 
 import numpy as np
@@ -78,19 +79,25 @@ class RockSquare(Rock):
 
 class Cave():
     def __init__(self):
-        self.cave = np.full(shape=(7, 5000), fill_value=False, dtype=bool)
+        self.cave = np.full(shape=(7, 300), fill_value=False, dtype=bool)
         self.height = -1
+        self.height_addon = 0
+        self.height_total = self.height
 
     def add_rock_to_cave(self, rock: Rock):
         self.cave[tuple(np.transpose(rock.points))] = True
         self.height = np.max(np.argwhere(cave_part1.cave), axis=0)[1]
+        if self.height > 200:
+            self.cave = np.hstack([self.cave[:, 100:], np.full(shape=(7, 100), fill_value=False)])
+            self.height_addon += 100
+            self.height = self.height - 100
+        self.height_total = self.height + self.height_addon
 
-
-
+patterns = set()
 jet_pattern_it = cycle(jet_pattern)
 rock_it = cycle([RockMinus, RockCross, RockEl, RockI, RockSquare])
 cave_part1 = Cave()
-for _ in range(2022):
+for i in range(len(jet_pattern*6)):
     this_rock: Rock = next(rock_it)(cave_part1)
     while True:
         # jet
@@ -104,4 +111,47 @@ for _ in range(2022):
             cave_part1.add_rock_to_cave(this_rock)
             break
 
-print(cave_part1.height+1)
+    new_pattern = tuple(cave_part1.cave[:, min(cave_part1.height - 100,0):].flatten()), type(this_rock)
+    if new_pattern in patterns:
+        print(i)
+    else:
+        patterns.add(new_pattern)
+
+print(cave_part1.height_total + 1)
+
+# part 2
+# find repetition
+
+jet_pattern_it = cycle(jet_pattern)
+rock_it = cycle([RockMinus, RockCross, RockEl, RockI, RockSquare])
+cave_part2 = Cave()
+
+patterns = {}
+repeating_structure = None
+repeating_height = 0
+repeating_index = 0
+
+ii = 0
+while True:
+    ii += 1
+    this_rock: Rock = next(rock_it)(cave_part2)
+    while True:
+        # jet
+        this_jet = next(jet_pattern_it)
+        if this_jet == '<':
+            this_rock.move_left()
+        elif this_jet == '>':
+            this_rock.move_right()
+        # down
+        if not this_rock.move_down():
+            cave_part2.add_rock_to_cave(this_rock)
+            break
+    new_pattern = tuple(cave_part2.cave[:, min(cave_part2.height - 100, 0):cave_part2.height+1].flatten()), type(this_rock)
+    if new_pattern in patterns:
+        repeating_structure = deepcopy(cave_part2)
+        old_height = patterns[new_pattern]
+        repeating_index = ii
+        repeating_height = cave_part2.height_total
+        break
+    else:
+        patterns[new_pattern] = cave_part2.height_total
