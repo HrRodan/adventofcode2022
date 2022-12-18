@@ -1,4 +1,3 @@
-from copy import deepcopy
 from itertools import cycle
 
 import numpy as np
@@ -79,79 +78,90 @@ class RockSquare(Rock):
 
 class Cave():
     def __init__(self):
-        self.cave = np.full(shape=(7, 300), fill_value=False, dtype=bool)
+        self.cave = np.full(shape=(7, 3000), fill_value=False, dtype=bool)
         self.height = -1
         self.height_addon = 0
         self.height_total = self.height
 
     def add_rock_to_cave(self, rock: Rock):
         self.cave[tuple(np.transpose(rock.points))] = True
-        self.height = np.max(np.argwhere(cave_part1.cave), axis=0)[1]
-        if self.height > 200:
-            self.cave = np.hstack([self.cave[:, 100:], np.full(shape=(7, 100), fill_value=False)])
-            self.height_addon += 100
-            self.height = self.height - 100
+        self.height = np.max(np.argwhere(self.cave), axis=0)[1]
+        if self.height > 2000:
+            self.cave = np.hstack([self.cave[:, 1000:], np.full(shape=(7, 1000), fill_value=False)])
+            self.height_addon += 1000
+            self.height = self.height - 1000
         self.height_total = self.height + self.height_addon
 
+
 patterns = set()
-jet_pattern_it = cycle(jet_pattern)
-rock_it = cycle([RockMinus, RockCross, RockEl, RockI, RockSquare])
-cave_part1 = Cave()
-for i in range(len(jet_pattern*6)):
-    this_rock: Rock = next(rock_it)(cave_part1)
-    while True:
-        # jet
-        this_jet = next(jet_pattern_it)
-        if this_jet == '<':
-            this_rock.move_left()
-        elif this_jet == '>':
-            this_rock.move_right()
-        # down
-        if not this_rock.move_down():
-            cave_part1.add_rock_to_cave(this_rock)
-            break
 
-    new_pattern = tuple(cave_part1.cave[:, min(cave_part1.height - 100,0):].flatten()), type(this_rock)
-    if new_pattern in patterns:
-        print(i)
-    else:
-        patterns.add(new_pattern)
 
-print(cave_part1.height_total + 1)
+def populate_cave(number_rocks: int):
+    jet_pattern_it = cycle(jet_pattern)
+    rock_it = cycle([RockMinus, RockCross, RockEl, RockI, RockSquare])
+    cave_to_populate = Cave()
+    for _ in range(number_rocks):
+        this_rock: Rock = next(rock_it)(cave_to_populate)
+        while True:
+            # jet
+            this_jet = next(jet_pattern_it)
+            if this_jet == '<':
+                this_rock.move_left()
+            elif this_jet == '>':
+                this_rock.move_right()
+            # down
+            if not this_rock.move_down():
+                cave_to_populate.add_rock_to_cave(this_rock)
+                break
+
+    return cave_to_populate
+
+
+print(populate_cave(2022).height_total + 1)
+
 
 # part 2
 # find repetition
 
-jet_pattern_it = cycle(jet_pattern)
-rock_it = cycle([RockMinus, RockCross, RockEl, RockI, RockSquare])
-cave_part2 = Cave()
-
-patterns = {}
-repeating_structure = None
-repeating_height = 0
-repeating_index = 0
-
-ii = 0
-while True:
-    ii += 1
-    this_rock: Rock = next(rock_it)(cave_part2)
+def find_repeating_pattern():
+    jet_pattern_it_p2 = cycle(enumerate(jet_pattern))
+    rock_it_p2 = cycle([RockMinus, RockCross, RockEl, RockI, RockSquare])
+    cave_to_repeat = Cave()
+    patterns_p2 = {}
+    ii = 0
     while True:
-        # jet
-        this_jet = next(jet_pattern_it)
-        if this_jet == '<':
-            this_rock.move_left()
-        elif this_jet == '>':
-            this_rock.move_right()
-        # down
-        if not this_rock.move_down():
-            cave_part2.add_rock_to_cave(this_rock)
-            break
-    new_pattern = tuple(cave_part2.cave[:, min(cave_part2.height - 100, 0):cave_part2.height+1].flatten()), type(this_rock)
-    if new_pattern in patterns:
-        repeating_structure = deepcopy(cave_part2)
-        old_height = patterns[new_pattern]
-        repeating_index = ii
-        repeating_height = cave_part2.height_total
-        break
-    else:
-        patterns[new_pattern] = cave_part2.height_total
+        ii += 1
+        this_rock: Rock = next(rock_it_p2)(cave_to_repeat)
+        while True:
+            # jet
+            jet_index, this_jet = next(jet_pattern_it_p2)
+            if this_jet == '<':
+                this_rock.move_left()
+            elif this_jet == '>':
+                this_rock.move_right()
+            # down
+            if not this_rock.move_down():
+                cave_to_repeat.add_rock_to_cave(this_rock)
+                break
+        if ii > 100:
+            new_pattern = hash(tuple(
+                (cave_to_repeat.cave[:,
+                 min(0, cave_to_repeat.height - 100):cave_to_repeat.height + 1].flatten()))), type(this_rock), jet_index
+            if new_pattern in patterns_p2:
+                repeating_index_height = cave_to_repeat.height_total, ii
+                break
+            else:
+                patterns_p2[new_pattern] = (cave_to_repeat.height_total, ii)
+
+    return patterns_p2[new_pattern], repeating_index_height
+
+
+# %%
+a = find_repeating_pattern()
+
+delta_height, delta_i = (y - x for x, y in zip(*a))
+
+count_repeats, mod = divmod(1000000000000, delta_i)
+
+r2 = count_repeats * delta_height + populate_cave(mod).height_total + 1
+print(r2)
