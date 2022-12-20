@@ -4,7 +4,7 @@ from copy import copy
 from functools import total_ordering
 from typing import Optional
 
-with open('input_test.txt') as f:
+with open('input.txt') as f:
     blueprints = [tuple((x[0], (x[1], 0, 0, 0), (x[2], 0, 0, 0), (x[3], x[4], 0, 0), (x[5], 0, x[6], 0))) for line in
                   f.readlines()
                   for x in
@@ -32,10 +32,6 @@ class Robots():
     @property
     def count_robots_tuple(self):
         return tuple(self.count_robots[::-1])
-
-    @property
-    def negative_geode_count(self):
-        return -self.stock[3]
 
     @property
     def reversed_stock_count(self):
@@ -119,6 +115,7 @@ class Robots():
         new.count_robots = self.count_robots.copy()
         new.stock = self.stock.copy()
         new.minutes = self.minutes
+        new.max_costs = self.max_costs.copy()
         return new
 
     # def run(self, rounds: int):
@@ -132,7 +129,7 @@ def get_highest_geode_count_from_blueprint(blueprint):
     # heap q key: (-rate_total, -time)
     time_states_to_visit = []
     robots_current: Robots
-    heapq.heappush(time_states_to_visit, ((0, 0), Robots(blueprint)))
+    heapq.heappush(time_states_to_visit, (0, 0, 0, Robots(blueprint)))
     max_potential = 0
     max_geodes = 0
     visited = {Robots(blueprint)}
@@ -144,14 +141,13 @@ def get_highest_geode_count_from_blueprint(blueprint):
     ii = 0
     while time_states_to_visit:
         ii += 1
-        (geode_count_current, time_current), robots_current = heapq.heappop(time_states_to_visit)
+        *_, robots_current = heapq.heappop(time_states_to_visit)
         if robots_current.minutes >= 24:
             continue
-        if ii%100000==0:
+        if ii % 100000 == 0:
             print(ii)
             print(len(time_states_to_visit))
             print(max_geodes)
-            print(time_current)
         for next_robot_to_build in robots_current.get_buildable_robots():
             robots_next = copy(robots_current)
             robots_next.run_one_minute(next_robot_to_build)
@@ -163,12 +159,14 @@ def get_highest_geode_count_from_blueprint(blueprint):
                 max_geodes = max(max_geodes, max_geodes_next)
                 stock_count_next_reversed_negativ = robots_next.reversed_stock_count_negative
                 heapq.heappush(time_states_to_visit,
-                               ((-time_next, stock_count_next_reversed_negativ), robots_next))
+                               (-time_next, stock_count_next_reversed_negativ[0:3], robots_next))
 
     return max_geodes
 
+#a = get_highest_geode_count_from_blueprint(blueprints[0])
 
 r1 = sum(get_highest_geode_count_from_blueprint(b) * b[0] for b in blueprints)
 print(r1)
 
 # 1869 too low
+# 1948 too low
