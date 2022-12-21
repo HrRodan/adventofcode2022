@@ -46,7 +46,7 @@ monkeys_part_2['root']['op'] = operator.eq
 
 
 def traverse_monkey_part2(start='root'):
-    # always return wheter current branch contains me yelling
+    # always return whether current branch contains me yelling
     if start == 'humn':
         return 'X', True
     m = monkeys_part_2[start]
