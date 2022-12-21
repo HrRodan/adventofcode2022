@@ -55,7 +55,7 @@ def traverse_monkey_part2(start='root'):
     m1, m1_contains_me = traverse_monkey_part2(m['monkey1'])
     m2, m2_contains_me = traverse_monkey_part2(m['monkey2'])
     if not m1_contains_me and not m2_contains_me:
-        return int(m['op'](m1, m2)), False
+        return m['op'](m1, m2), False
     # prevent abundance of brackets
     m1_str = f'({m1})' if m1_contains_me else str(m1)
     m2_str = f'({m2})' if m2_contains_me else str(m2)
@@ -64,4 +64,4 @@ def traverse_monkey_part2(start='root'):
 
 r2_sym = Eq(*[parse_expr(x) for x in traverse_monkey_part2()[0].split('==')])
 r2 = sympy.solve(r2_sym, 'X')[0]
-print(r2)
+print(int(r2))
