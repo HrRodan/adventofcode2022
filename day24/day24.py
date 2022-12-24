@@ -76,8 +76,7 @@ def find_fastest_path(start: POINT_TYP, end: POINT_TYP, distances, offset_time=0
             next_point_time_tuple = (next_point, next_time)
             # REAL Start and REAL END have never blizzards
             if next_point_time_tuple not in visited and \
-                    (next_point == REAL_START or
-                     next_point == REAL_END or
+                    (next_point in [REAL_START, REAL_END] or
                      not blizzard_location[next_time % repetition_count][next_point]):
                 visited.add(next_point_time_tuple)
                 if next_point == end:
