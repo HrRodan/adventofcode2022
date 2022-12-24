@@ -1,3 +1,4 @@
+from functools import lru_cache
 from itertools import cycle
 from typing import Tuple
 
@@ -18,14 +19,14 @@ direction_cycle_repeat = sliding_window(cycle([0, 1, 2, 3]), 4)
 
 def numpy_tuple_wrapper(function):
     def inner(array_part, *args, **kwargs):
-        array_part_tuple = tuple(int(x) for x in array_part)
+        array_part_tuple = tuple(array_part)
         return function(array_part_tuple, *args, **kwargs)
 
     return inner
 
 
-# @numpy_tuple_wrapper
-# @lru_cache
+@numpy_tuple_wrapper
+@lru_cache
 def check_surrounding(array_part: Tuple[int], current_cycle: Tuple[int]):
     # no elves
     if int(array_part[4]) == 0:
@@ -45,8 +46,8 @@ def check_surrounding(array_part: Tuple[int], current_cycle: Tuple[int]):
 # -0-
 # 123
 # -4-
-# @numpy_tuple_wrapper
-# @lru_cache
+@numpy_tuple_wrapper
+@lru_cache
 def check_collisions(array_part: Tuple[int]):
     this_value = array_part[2]
     if this_value != 0:
@@ -56,8 +57,8 @@ def check_collisions(array_part: Tuple[int]):
     return 99 if count > 1 else 0
 
 
-# @numpy_tuple_wrapper
-# @lru_cache
+@numpy_tuple_wrapper
+@lru_cache
 def allow_movement(array_part: Tuple[int]):
     this_value = array_part[2]
     if this_value in [0, 99]:
@@ -88,6 +89,7 @@ for i in range(1, 1000):
     grove = (north + south + east + west + grove == 1).astype(np.byte)
     if i % 10 == 0:
         # trim array
+        print(i)
         nz = np.nonzero(grove)  # Indices of all nonzero elements
         grove = grove[nz[0].min():nz[0].max() + 1, nz[1].min():nz[1].max() + 1]
     if i == 10:
