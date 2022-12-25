@@ -19,7 +19,7 @@ blizzard_south = area_raw == 'v'
 blizzard_west = area_raw == '<'
 blizzard_east = area_raw == '>'
 all_points = {tuple(x) for x in np.transpose(area_raw.nonzero())}
-repetition_count = math.lcm(shape[0], shape[1])
+repetition_count = math.lcm(*shape)
 
 # precompute blizzard location, repeats after lcm
 blizzard_location: Dict[int, np.array] = {}
